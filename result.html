@@ -3,54 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SNAPVIZ-α - AI 자동화 서비스</title>
+    <title>콘텐츠 기획안 결과</title>
     <style>
-        /* 모든 CSS는 이전과 동일합니다. */
+        /* Pretendard 폰트 불러오기 */
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
-        body { font-family: 'Pretendard', sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 40px 20px; }
-        .container { max-width: 800px; margin: 0 auto; background-color: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        /* ... */
-        .submit-btn:hover { background-color: #0b5ed7; }
+
+        body {
+            font-family: 'Pretendard', sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        h1 {
+            color: #0d6efd;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 10px;
+        }
+        .result-item {
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        .result-item strong {
+            display: block;
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .result-item p {
+            margin: 0;
+            padding-left: 10px;
+            border-left: 3px solid #ced4da;
+            color: #555;
+            white-space: pre-wrap; /* textarea의 줄바꿈이 그대로 표시되도록 설정 */
+        }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <header class="header">
-            <h1>SNAPVIZ-α</h1>
-            <p>사전미팅용 콘텐츠 기획 AI 자동화 서비스</p>
-        </header>
-        <div class="notice">
-            ⚠️ 본 기획안은 초기 입력을 기반으로 생성된 참고 자료이며, 미팅 및 협의 과정에서 내용이 변경될 수 있습니다.  계약이 체결되지 않을 경우, 포함된 인적 정보는 저작권법에 따라 
-3개월 이내 폐기됩니다. 또한 이 자료는 무단 배포 및 외부 공유는 금지됩니다. @SNAPVIZ_SKR.CO  <strong>내용은 가능한 한 구체적이고 자세하게 작성해 주세요.</strong>
-        </div>
-
-        <form id="snapviz-form">
-            
-            <div class="form-group">
-                <label for="idea" class="group-title">1. 핵심 아이디어가 필요한가요!</label>
-                <textarea id="idea" name="idea" class="form-control" placeholder="(여기에 사용자가 만들고 싶은 영상의 핵심 내용을 자유롭게 입력)"></textarea>
-            </div>
-            <div class="form-group">
-                <label class="group-title">2. 영상 포맷은 무엇인가요?</label>
-                <p class="helper-text">+ 가장 적합한 한가지만 선택해주세요!</p>
-                <div class="radio-group">
-                    <label class="radio-label"><input type="radio" name="format" value="shorts" checked> <span class="radio-custom"></span> 숏폼 (유튜브 쇼츠, 틱톡, 인스타그램 릴스)</label>
-                    <label class="radio-label"><input type="radio" name="format" value="etc"> <span class="radio-custom"></span> 기타: <input type="text" name="format-etc" class="etc-input" placeholder="직접입력"></label>
-                </div>
-            </div>
-            <button type="submit" class="submit-btn">제출하기</button>
-        </form>
+        <h1>📝 생성된 콘텐츠 기획안</h1>
+        
+        <div id="results-container"></div>
     </div>
-    
+
     <script>
-        const form = document.getElementById('snapviz-form');
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
-            const formData = new FormData(form);
-            const queryString = new URLSearchParams(formData).toString();
-            const nextPageUrl = 'result.html?' + queryString;
-            window.location.href = nextPageUrl;
+        // 페이지가 로드되었을 때 실행됩니다.
+        window.addEventListener('load', function() {
+            // 현재 페이지의 URL에서 쿼리 스트링(물음표 뒷부분)을 가져옵니다.
+            const queryString = window.location.search;
+            
+            // 쿼리 스트링을 다루기 쉬운 URLSearchParams 객체로 만듭니다.
+            const params = new URLSearchParams(queryString);
+            
+            // 결과를 표시할 컨테이너 div를 찾습니다.
+            const resultsContainer = document.getElementById('results-container');
+            
+            // 쿼리 파라미터에 데이터가 없으면 메시지를 표시합니다.
+            if (params.toString() === '') {
+                resultsContainer.innerHTML = '<p>제출된 데이터가 없습니다. 폼을 먼저 작성해주세요.</p>';
+                return;
+            }
+
+            // 각 파라미터의 한글 제목을 매핑합니다.
+            const keyMap = {
+                'idea': '1. 핵심 아이디어',
+                'format': '2. 영상 포맷',
+                'format-etc': '2. 영상 포맷 (기타)',
+                'platform': '3. 사용 플랫폼',
+                'platform-etc': '3. 사용 플랫폼 (기타)',
+                'target-audience': '4. 타겟 시청자',
+                'length': '5. 영상 길이',
+                'vibe': '6. 영상 분위기',
+                'reference-1': '7. 레퍼런스 1',
+                'reference-2': '7. 레퍼런스 2',
+                'reference-description': '7. 레퍼런스 설명',
+                'additional-requests': '기타 요청사항'
+            };
+
+            // 폼 질문 순서대로 key를 정렬하여 순서대로 표시합니다.
+            const orderedKeys = Object.keys(keyMap);
+
+            orderedKeys.forEach(key => {
+                if (params.has(key)) {
+                    const value = params.get(key);
+                    // 값이 비어있지 않은 경우에만 화면에 표시합니다.
+                    if (value) {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'result-item';
+
+                        const title = keyMap[key] || key;
+                        
+                        // XSS(Cross-Site Scripting) 방지를 위해 텍스트로 안전하게 처리
+                        const pElement = document.createElement('p');
+                        pElement.textContent = value;
+
+                        itemDiv.innerHTML = `<strong>${title}</strong>`;
+                        itemDiv.appendChild(pElement);
+                        
+                        resultsContainer.appendChild(itemDiv);
+                    }
+                }
+            });
         });
     </script>
 </body>
