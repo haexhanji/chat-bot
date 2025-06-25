@@ -10,40 +10,67 @@
             height: 100%;
             margin: 0;
             font-family: 'Helvetica Neue', Arial, sans-serif;
-            background-color: #f4f4f4; /* 부드러운 회색 배경 */
-            color: #333; /* 기본 텍스트 색상 */
-            display: flex; /* 내용을 중앙에 정렬하기 위해 Flexbox 사용 */
-            justify-content: center; /* 가로 중앙 정렬 */
-            align-items: center; /* 세로 중앙 정렬 */
+            color: #333;
         }
 
-        /* 메시지를 감싸는 컨테이너 */
-        .container {
-            text-align: center; /* 텍스트를 중앙 정렬 */
-            padding: 20px;
+        /* 흐릿한 배경 레이어 만들기 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            
+            /* === 여기를 소문자 'logo.png'로 수정했습니다 === */
+            background-image: url('logo.png'); 
+            background-size: cover;
+            background-position: center;
+            
+            filter: blur(8px);
+            -webkit-filter: blur(8px);
+            
+            z-index: -1; 
+        }
+        
+        /* 메시지 상자를 화면 중앙에 배치하는 역할 */
+        .flex-container {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 메시지 상자 스타일 */
+        .message-box {
+            text-align: center;
+            padding: 40px;
             border-radius: 10px;
-            background-color: white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* 약간의 그림자 효과 */
+            background-color: rgba(255, 255, 255, 0.75);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         /* 메인 제목 */
         h1 {
-            font-size: 2.5em; /* 글자 크기 */
-            margin-bottom: 10px; /* 제목 아래 여백 */
+            font-size: 2.5em;
+            margin-top: 0;
+            margin-bottom: 10px;
         }
 
         /* 부가 설명 */
         p {
             font-size: 1.2em;
-            color: #666; /* 약간 연한 텍스트 색상 */
+            color: #333;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>🛠️ 개발 중입니다 🛠️</h1>
-        <p>더 멋진 모습으로 찾아뵙기 위해 준비 중입니다.<br>잠시만 기다려 주세요.</p>
+    <div class="flex-container">
+        <div class="message-box">
+            <h1>🛠️ 개발 중입니다 🛠️</h1>
+            <p>더 멋진 모습으로 찾아뵙기 위해 준비 중입니다.<br>잠시만 기다려 주세요.</p>
+        </div>
     </div>
 
 </body>
