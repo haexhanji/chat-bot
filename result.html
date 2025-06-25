@@ -43,7 +43,27 @@
             padding-left: 10px;
             border-left: 3px solid #ced4da;
             color: #555;
-            white-space: pre-wrap; /* textarea의 줄바꿈이 그대로 표시되도록 설정 */
+            white-space: pre-wrap;
+        }
+        /* === 새로 추가된 저장 버튼 스타일 === */
+        .save-btn {
+            display: block;
+            width: 100%;
+            max-width: 250px;
+            margin: 40px auto 0;
+            padding: 12px;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #fff;
+            background-color: #198754; /* 초록색 배경 */
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.2s;
+        }
+        .save-btn:hover {
+            background-color: #157347;
         }
     </style>
 </head>
@@ -52,9 +72,12 @@
         <h1>📝 생성된 콘텐츠 기획안</h1>
         
         <div id="results-container"></div>
+
+        <button id="save-btn" class="save-btn">텍스트 파일로 저장</button>
     </div>
 
     <script>
+        // 페이지가 로드되었을 때 결과 데이터를 표시하는 기존 스크립트
         window.addEventListener('load', function() {
             const queryString = window.location.search;
             const params = new URLSearchParams(queryString);
@@ -62,6 +85,7 @@
             
             if (params.toString() === '') {
                 resultsContainer.innerHTML = '<p>제출된 데이터가 없습니다. 폼을 먼저 작성해주세요.</p>';
+                document.getElementById('save-btn').style.display = 'none'; // 데이터 없으면 저장 버튼 숨기기
                 return;
             }
 
@@ -77,7 +101,6 @@
                 'reference-description': '7. 레퍼런스 설명',
                 'additional-requests': '기타 요청사항'
             };
-
             const orderedKeys = Object.keys(keyMap);
 
             orderedKeys.forEach(key => {
@@ -95,6 +118,41 @@
                     }
                 }
             });
+        });
+
+        // === 새로 추가된 '저장하기' 버튼 기능 스크립트 ===
+        const saveBtn = document.getElementById('save-btn');
+        saveBtn.addEventListener('click', function() {
+            // 1. 결과 내용 수집 및 텍스트 변환
+            let textContent = "SNAPVIZ-α 콘텐츠 기획안\n";
+            textContent += "================================\n\n";
+
+            const resultItems = document.querySelectorAll('.result-item');
+            resultItems.forEach(item => {
+                const title = item.querySelector('strong').textContent;
+                const value = item.querySelector('p').textContent;
+                
+                textContent += `${title}\n`;
+                textContent += ` - ${value}\n\n`;
+            });
+
+            // 2. 텍스트 파일 생성 및 다운로드
+            // Blob 객체: 텍스트 데이터를 파일처럼 다루게 해줍니다.
+            const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+
+            // 다운로드를 위한 임시 URL을 만듭니다.
+            const url = URL.createObjectURL(blob);
+            
+            // 보이지 않는 <a> 태그를 만들어 다운로드를 실행합니다.
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '기획안.txt'; // 다운로드될 파일의 이름
+            document.body.appendChild(a); // a 태그를 페이지에 잠시 추가
+            a.click(); // 강제로 클릭 이벤트를 발생시켜 다운로드 실행
+            
+            // 다운로드 후에는 임시 a 태그와 URL을 정리합니다.
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         });
     </script>
 </body>
