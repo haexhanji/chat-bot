@@ -3,107 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>콘텐츠 기획안 결과</title>
+    <title>SNAPVIZ-α - AI 자동화 서비스</title>
     <style>
-        /* Pretendard 폰트 불러오기 */
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
-
-        body {
-            font-family: 'Pretendard', sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
-            margin: 0;
-            padding: 40px 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-        h1 {
-            color: #0d6efd;
-            border-bottom: 2px solid #0d6efd;
-            padding-bottom: 10px;
-        }
-        .result-item {
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-        .result-item strong {
-            display: block;
-            font-size: 1.1em;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        .result-item p {
-            margin: 0;
-            padding-left: 10px;
-            border-left: 3px solid #ced4da;
-            color: #555;
-        }
+        body { font-family: 'Pretendard', sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 40px 20px; }
+        .container { max-width: 800px; margin: 0 auto; background-color: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        /* ... (이전과 동일한 모든 CSS 스타일) ... */
+        .radio-label { font-size: 1.0em; }
+        .submit-btn { width: 100%; padding: 15px; font-size: 1.2em; font-weight: 700; color: #fff; background-color: #0d6efd; border: none; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
+        .submit-btn:hover { background-color: #0b5ed7; }
     </style>
 </head>
 <body>
+
     <div class="container">
-        <h1>📝 생성된 콘텐츠 기획안</h1>
-        
-        <div id="results-container"></div>
+        <form id="snapviz-form">
+            
+            <div class="form-group">
+                <label for="idea" class="group-title">1. 핵심 아이디어가 필요한가요!</label>
+                <textarea id="idea" name="idea" class="form-control" placeholder="(여기에 사용자가 만들고 싶은 영상의 핵심 내용을 자유롭게 입력)"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="group-title">2. 영상 포맷은 무엇인가요?</label>
+                <p class="helper-text">+ 가장 적합한 한가지만 선택해주세요!</p>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="format" value="shorts" checked> <span class="radio-custom"></span> 숏폼 (유튜브 쇼츠, 틱톡, 인스타그램 릴스)</label>
+                    <label class="radio-label"><input type="radio" name="format" value="longform"> <span class="radio-custom"></span> 롱폼 (일반 유튜브 영상, 다큐멘터리 등)</label>
+                    <label class="radio-label"><input type="radio" name="format" value="interview"> <span class="radio-custom"></span> 인터뷰/강의</label>
+                    <label class="radio-label"><input type="radio" name="format" value="mv"> <span class="radio-custom"></span> 뮤직비디오</label>
+                    <label class="radio-label"><input type="radio" name="format" value="ad"> <span class="radio-custom"></span> 광고/홍보</label>
+                    <label class="radio-label"><input type="radio" name="format" value="etc"> <span class="radio-custom"></span> 기타: <input type="text" name="format-etc" class="etc-input" placeholder="직접입력"></label>
+                </div>
+            </div>
+            <button type="submit" class="submit-btn">제출하기</button>
+        </form>
     </div>
 
     <script>
-        // 페이지가 로드되었을 때 실행됩니다.
-        window.addEventListener('load', function() {
-            // 현재 페이지의 URL에서 쿼리 스트링(물음표 뒷부분)을 가져옵니다.
-            const queryString = window.location.search;
+        // id가 'snapviz-form'인 form 요소를 찾습니다.
+        const form = document.getElementById('snapviz-form');
+
+        // 폼에서 'submit' 이벤트가 발생했을 때(제출하기 버튼 클릭 시) 실행될 함수를 등록합니다.
+        form.addEventListener('submit', function(event) {
+            // 폼의 기본 제출 동작(페이지 새로고침 등)을 막습니다.
+            event.preventDefault();
+
+            // 현재 폼의 모든 입력 데이터를 FormData 객체로 가져옵니다.
+            const formData = new FormData(form);
             
-            // 쿼리 스트링을 다루기 쉬운 URLSearchParams 객체로 만듭니다.
-            const params = new URLSearchParams(queryString);
-            
-            // 결과를 표시할 컨테이너 div를 찾습니다.
-            const resultsContainer = document.getElementById('results-container');
-            
-            // 쿼리 파라미터에 데이터가 없으면 메시지를 표시합니다.
-            if (params.toString() === '') {
-                resultsContainer.innerHTML = '<p>제출된 데이터가 없습니다. 폼을 먼저 작성해주세요.</p>';
-                return;
-            }
+            // FormData를 URL 쿼리 스트링(예: 'idea=내용&format=shorts')으로 변환합니다.
+            const queryString = new URLSearchParams(formData).toString();
 
-            // 각 파라미터(key, value)에 대해 반복 작업을 수행합니다.
-            params.forEach((value, key) => {
-                // 값이 비어있지 않은 경우에만 화면에 표시합니다.
-                if (value) {
-                    // 결과를 담을 div 요소를 새로 만듭니다.
-                    const itemDiv = document.createElement('div');
-                    itemDiv.className = 'result-item';
+            // 'result.html' 페이지 주소에 쿼리 스트링을 붙여 완전한 URL을 만듭니다.
+            const nextPageUrl = 'result.html?' + queryString;
 
-                    // key 값을 한글 제목으로 바꾸는 간단한 로직 (필요에 따라 추가)
-                    const keyMap = {
-                        'idea': '1. 핵심 아이디어',
-                        'format': '2. 영상 포맷',
-                        'format-etc': '2. 영상 포맷 (기타)',
-                        'platform': '3. 사용 플랫폼',
-                        'platform-etc': '3. 사용 플랫폼 (기타)',
-                        'target-audience': '4. 타겟 시청자',
-                        'length': '5. 영상 길이',
-                        'vibe': '6. 영상 분위기',
-                        'reference-1': '7. 레퍼런스 1',
-                        'reference-2': '7. 레퍼런스 2',
-                        'reference-description': '7. 레퍼런스 설명',
-                        'additional-requests': '기타 요청사항'
-                    };
-
-                    const title = keyMap[key] || key; // 맵에 있는 한글 제목 또는 원래 key 사용
-
-                    // 새로 만든 div 안에 내용을 채워 넣습니다.
-                    itemDiv.innerHTML = `<strong>${title}</strong><p>${value}</p>`;
-                    
-                    // 완성된 항목을 컨테이너에 추가합니다.
-                    resultsContainer.appendChild(itemDiv);
-                }
-            });
+            // 새로 만들어진 URL로 페이지를 이동시킵니다.
+            window.location.href = nextPageUrl;
         });
     </script>
 </body>
