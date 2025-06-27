@@ -12,7 +12,7 @@
         .result-item { margin-bottom: 20px; line-height: 1.6; }
         .result-item strong { display: block; font-size: 1.1em; color: #333; margin-bottom: 5px; }
         .result-item p { margin: 0; padding-left: 10px; border-left: 3px solid #ced4da; color: #555; white-space: pre-wrap; }
-        .button-group { display: flex; justify-content: center; gap: 20px; margin-top: 40px; }
+        .button-group { display: flex; justify-content: center; gap: 20px; margin-top: 40px; flex-wrap: wrap; }
         .action-btn { width: 100%; max-width: 250px; padding: 12px; font-size: 1.1em; font-weight: 600; color: #fff; border: none; border-radius: 6px; cursor: pointer; text-align: center; text-decoration: none; transition: background-color 0.2s; }
         .save-btn { background-color: #198754; }
         .save-btn:hover { background-color: #157347; }
@@ -31,7 +31,6 @@
     </div>
 
     <script>
-        // 페이지 로드 시 데이터 표시
         window.addEventListener('load', function() {
             const queryString = window.location.search;
             const params = new URLSearchParams(queryString);
@@ -47,32 +46,42 @@
                 return;
             }
 
+            // 전체 질문에 대한 keyMap
             const keyMap = {
                 'idea': '1. 핵심 아이디어',
                 'format': '2. 영상 포맷',
                 'platform': '3. 타겟 플랫폼',
                 'target-audience': '4. 타겟 시청자',
+                'length': '5. 영상 길이 (예상)',
                 'vibe': '6. 영상의 \'느낌/분위기\'',
-                'reference': '7. 레퍼런스'
+                'reference': '7. 레퍼런스',
+                'additional-requests': '기타 요청사항'
             };
 
-            // 체크박스 값(플랫폼)과 같이 여러 개인 항목을 처리
             const displayData = {};
             for (const [key, value] of params.entries()) {
-                if (displayData[key]) {
-                    displayData[key].push(value);
+                if (key.endsWith('[]')) { // name="platform[]" 같은 경우를 대비 (선택사항)
+                    const cleanKey = key.slice(0, -2);
+                    if (!displayData[cleanKey]) displayData[cleanKey] = [];
+                    displayData[cleanKey].push(value);
                 } else {
-                    displayData[key] = [value];
+                    if (!displayData[key]) displayData[key] = [];
+                    displayData[key].push(value);
                 }
             }
-
+            
             Object.keys(keyMap).forEach(key => {
                 if (displayData[key]) {
                     const itemDiv = document.createElement('div');
                     itemDiv.className = 'result-item';
                     const title = keyMap[key] || key;
                     const value = displayData[key].join(', '); // 여러 값은 쉼표로 연결
-                    itemDiv.innerHTML = `<strong>${title}</strong><p>${value}</p>`;
+                    
+                    const pElement = document.createElement('p');
+                    pElement.textContent = value;
+                    itemDiv.innerHTML = `<strong>${title}</strong>`;
+                    itemDiv.appendChild(pElement);
+                    
                     resultsContainer.appendChild(itemDiv);
                 }
             });
