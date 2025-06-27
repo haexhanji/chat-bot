@@ -3,89 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>콘텐츠 기획안 결과</title>
+    <title>작성된 콘텐츠 기획안</title>
     <style>
-        /* Pretendard 폰트 불러오기 */
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
-
-        body {
-            font-family: 'Pretendard', sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
-            margin: 0;
-            padding: 40px 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        }
-        h1 {
-            color: #0d6efd;
-            border-bottom: 2px solid #0d6efd;
-            padding-bottom: 10px;
-        }
-        .result-item {
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-        .result-item strong {
-            display: block;
-            font-size: 1.1em;
-            color: #333;
-            margin-bottom: 5px;
-        }
-        .result-item p {
-            margin: 0;
-            padding-left: 10px;
-            border-left: 3px solid #ced4da;
-            color: #555;
-            white-space: pre-wrap;
-        }
-        /* === 새로 추가된 저장 버튼 스타일 === */
-        .save-btn {
-            display: block;
-            width: 100%;
-            max-width: 250px;
-            margin: 40px auto 0;
-            padding: 12px;
-            font-size: 1.1em;
-            font-weight: 600;
-            color: #fff;
-            background-color: #198754; /* 초록색 배경 */
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            text-align: center;
-            transition: background-color 0.2s;
-        }
-        .save-btn:hover {
-            background-color: #157347;
-        }
+        body { font-family: 'Pretendard', sans-serif; background-color: #f0f2f5; color: #333; margin: 0; padding: 40px 20px; }
+        .container { max-width: 800px; margin: 0 auto; background-color: #fff; padding: 40px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h1 { color: #0d6efd; border-bottom: 2px solid #0d6efd; padding-bottom: 10px; }
+        .result-item { margin-bottom: 20px; line-height: 1.6; }
+        .result-item strong { display: block; font-size: 1.1em; color: #333; margin-bottom: 5px; }
+        .result-item p { margin: 0; padding-left: 10px; border-left: 3px solid #ced4da; color: #555; white-space: pre-wrap; }
+        .button-group { display: flex; justify-content: center; gap: 20px; margin-top: 40px; }
+        .action-btn { width: 100%; max-width: 250px; padding: 12px; font-size: 1.1em; font-weight: 600; color: #fff; border: none; border-radius: 6px; cursor: pointer; text-align: center; text-decoration: none; transition: background-color 0.2s; }
+        .save-btn { background-color: #198754; }
+        .save-btn:hover { background-color: #157347; }
+        .analyze-btn { background-color: #fd7e14; }
+        .analyze-btn:hover { background-color: #d96d11; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📝 생성된 콘텐츠 기획안</h1>
-        
+        <h1>📝 작성된 콘텐츠 기획안</h1>
         <div id="results-container"></div>
-
-        <button id="save-btn" class="save-btn">텍스트 파일로 저장</button>
+        <div class="button-group">
+            <button id="save-btn" class="action-btn save-btn">텍스트 파일로 저장</button>
+            <a href="#" id="analyze-link" class="action-btn analyze-btn">AI 분석하기</a>
+        </div>
     </div>
 
     <script>
-        // 페이지가 로드되었을 때 결과 데이터를 표시하는 기존 스크립트
+        // 페이지 로드 시 데이터 표시
         window.addEventListener('load', function() {
             const queryString = window.location.search;
             const params = new URLSearchParams(queryString);
             const resultsContainer = document.getElementById('results-container');
+            const analyzeLink = document.getElementById('analyze-link');
             
-            if (params.toString() === '') {
-                resultsContainer.innerHTML = '<p>제출된 데이터가 없습니다. 폼을 먼저 작성해주세요.</p>';
-                document.getElementById('save-btn').style.display = 'none'; // 데이터 없으면 저장 버튼 숨기기
+            // AI 분석하기 버튼에 현재 쿼리 스트링을 그대로 연결
+            analyzeLink.href = 'output.html' + queryString;
+
+            if (!params.toString()) {
+                resultsContainer.innerHTML = '<p>제출된 데이터가 없습니다.</p>';
+                document.querySelector('.button-group').style.display = 'none';
                 return;
             }
 
@@ -94,64 +52,46 @@
                 'format': '2. 영상 포맷',
                 'platform': '3. 타겟 플랫폼',
                 'target-audience': '4. 타겟 시청자',
-                'length': '5. 영상 길이 (예상)',
                 'vibe': '6. 영상의 \'느낌/분위기\'',
-                'reference-1': '7. 레퍼런스 1',
-                'reference-2': '7. 레퍼런스 2',
-                'reference-description': '7. 레퍼런스 설명',
-                'additional-requests': '기타 요청사항'
+                'reference': '7. 레퍼런스'
             };
-            const orderedKeys = Object.keys(keyMap);
 
-            orderedKeys.forEach(key => {
-                if (params.has(key)) {
-                    const value = params.get(key);
-                    if (value) {
-                        const itemDiv = document.createElement('div');
-                        itemDiv.className = 'result-item';
-                        const title = keyMap[key] || key;
-                        const pElement = document.createElement('p');
-                        pElement.textContent = value;
-                        itemDiv.innerHTML = `<strong>${title}</strong>`;
-                        itemDiv.appendChild(pElement);
-                        resultsContainer.appendChild(itemDiv);
-                    }
+            // 체크박스 값(플랫폼)과 같이 여러 개인 항목을 처리
+            const displayData = {};
+            for (const [key, value] of params.entries()) {
+                if (displayData[key]) {
+                    displayData[key].push(value);
+                } else {
+                    displayData[key] = [value];
+                }
+            }
+
+            Object.keys(keyMap).forEach(key => {
+                if (displayData[key]) {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'result-item';
+                    const title = keyMap[key] || key;
+                    const value = displayData[key].join(', '); // 여러 값은 쉼표로 연결
+                    itemDiv.innerHTML = `<strong>${title}</strong><p>${value}</p>`;
+                    resultsContainer.appendChild(itemDiv);
                 }
             });
         });
 
-        // === 새로 추가된 '저장하기' 버튼 기능 스크립트 ===
-        const saveBtn = document.getElementById('save-btn');
-        saveBtn.addEventListener('click', function() {
-            // 1. 결과 내용 수집 및 텍스트 변환
-            let textContent = "SNAPVIZ-α 콘텐츠 기획안\n";
-            textContent += "================================\n\n";
-
-            const resultItems = document.querySelectorAll('.result-item');
-            resultItems.forEach(item => {
+        // 저장 버튼 기능
+        document.getElementById('save-btn').addEventListener('click', function() {
+            let textContent = "작성된 콘텐츠 기획안\n================================\n\n";
+            document.querySelectorAll('.result-item').forEach(item => {
                 const title = item.querySelector('strong').textContent;
                 const value = item.querySelector('p').textContent;
-                
-                textContent += `${title}\n`;
-                textContent += ` - ${value}\n\n`;
+                textContent += `${title}\n - ${value}\n\n`;
             });
-
-            // 2. 텍스트 파일 생성 및 다운로드
-            // Blob 객체: 텍스트 데이터를 파일처럼 다루게 해줍니다.
             const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
-
-            // 다운로드를 위한 임시 URL을 만듭니다.
             const url = URL.createObjectURL(blob);
-            
-            // 보이지 않는 <a> 태그를 만들어 다운로드를 실행합니다.
             const a = document.createElement('a');
             a.href = url;
-            a.download = '기획안.txt'; // 다운로드될 파일의 이름
-            document.body.appendChild(a); // a 태그를 페이지에 잠시 추가
-            a.click(); // 강제로 클릭 이벤트를 발생시켜 다운로드 실행
-            
-            // 다운로드 후에는 임시 a 태그와 URL을 정리합니다.
-            document.body.removeChild(a);
+            a.download = '기획안.txt';
+            a.click();
             URL.revokeObjectURL(url);
         });
     </script>
