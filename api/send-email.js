@@ -35,7 +35,7 @@ export default async (req, res) => {
     // 7. Resend를 사용하여 이메일을 발송합니다.
     const { data: sentData, error } = await resend.emails.send({
       from: '콘텐츠 기획 봇 <onboarding@resend.dev>', // ⚠️ 중요: Resend에서 기본으로 제공하는 주소입니다.
-      to: ['skrproduction1231@gmail.com'],                // ⚠️ 중요: 이메일을 받을 실제 주소를 입력하세요!
+      to: ['shaechanjidawn@gmail.com'],                // ⚠️ 중요: 이메일을 받을 실제 주소를 입력하세요!
       subject: `[콘텐츠 기획안] ${data.idea || '새로운 기획안'}`,
       html: emailHtml,
     });
